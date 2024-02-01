@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: calculator-app
+  template:
+    metadata:
+      labels:
+        app: calculator-app
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Release.Name }}-serviceaccount
+      {{- end }}
+      containers:
+      - name: calculator-app
+        image: openjdk:11
+        command:
+          - "/bin/sh"
+          - "-c"
+          - "git clone {{ .Values.git.repository }} /app && cd /app && javac CalculatorApp.java && java CalculatorApp"
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
